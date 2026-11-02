@@ -136,9 +136,10 @@ input[type=number]{appearance:textfield;-moz-appearance:textfield}
 .theme-item[aria-checked="true"]{color:var(--gold-dark);background:var(--gold-soft)}
 
 /* ---------- 页面 ---------- */
-main{display:block}
+main{position:relative;display:block}
 .page{display:none;padding:16px 18px calc(96px + env(safe-area-inset-bottom))}
 .page.is-active{display:block;animation:pageIn .34s cubic-bezier(.22,1,.36,1)}
+.page.no-page-anim.is-active{animation:none}
 @keyframes pageIn{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
 
 /* ---------- 余额卡片 ---------- */
@@ -164,6 +165,9 @@ main{display:block}
 .hero-icon.icon-coin{background-image:var(--icon-coin)}
 .hero-icon.icon-featured{background-image:var(--icon-featured)}
 .hero-icon.icon-highlight{background-image:var(--icon-highlight)}
+.hero-saved{display:flex;align-items:baseline;gap:8px;margin-top:8px}
+.hero-saved-label{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.02em}
+.hero-saved-num{font-size:15px;font-weight:600;color:var(--gold-dark);font-variant-numeric:tabular-nums}
 
 .dateline{
   display:flex;align-items:flex-end;justify-content:space-between;gap:10px;
@@ -341,26 +345,58 @@ main{display:block}
 }
 .collapse-btn[aria-expanded="true"] .chev{transform:rotate(180deg)}
 
-/* ---------- 底部标签栏（Safari 标签页风格） ---------- */
+/* ---------- 底部标签栏（iOS 玻璃风格） ---------- */
 .tabbar{
   position:fixed;left:50%;bottom:calc(8px + env(safe-area-inset-bottom));
   transform:translateX(-50%);
   width:calc(100% - 24px);max-width:406px;z-index:30;
   display:flex;gap:2px;
   padding:6px;
-  border-radius:22px;
-  background:rgba(249,249,249,.78);
-  backdrop-filter:saturate(190%) blur(24px);
-  -webkit-backdrop-filter:saturate(190%) blur(24px);
-  box-shadow:0 0 0 .5px rgba(0,0,0,.08), 0 10px 30px rgba(0,0,0,.12), 0 1px 2px rgba(0,0,0,.06);
+  border-radius:24px;
+  border:1px solid rgba(255,255,255,.85);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.58) 0%, rgba(234,238,246,.16) 46%, rgba(255,255,255,.44) 100%),
+    rgba(232,236,244,.58);
+  backdrop-filter:saturate(200%) blur(40px);
+  -webkit-backdrop-filter:saturate(200%) blur(40px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 -1px 0 rgba(255,255,255,.55),
+    inset 0 0 26px rgba(255,255,255,.35),
+    0 0 0 1px rgba(0,0,0,.09),
+    0 22px 50px rgba(0,0,0,.24);
+}
+/* 玻璃顶部高光 */
+.tabbar::before{
+  content:"";position:absolute;left:8px;right:8px;top:1px;height:56%;
+  border-radius:23px 23px 34px 34px;
+  background:linear-gradient(180deg, rgba(255,255,255,.85), rgba(255,255,255,.18) 46%, rgba(255,255,255,0));
+  pointer-events:none;
+}
+/* 磨砂颗粒，让毛玻璃质感更明显 */
+.tabbar::after{
+  content:"";position:absolute;inset:0;border-radius:inherit;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:180px 180px;
+  mix-blend-mode:overlay;
+  opacity:.24;
+  pointer-events:none;
+}
+.tab-indicator{
+  position:absolute;top:6px;bottom:6px;left:0;width:0;
+  border-radius:18px;z-index:0;pointer-events:none;
+  background:linear-gradient(180deg, rgba(255,255,255,.58), rgba(255,255,255,.22));
+  box-shadow:inset 0 0 0 .5px rgba(0,0,0,.08), inset 0 1px 0 rgba(255,255,255,.75), 0 2px 6px rgba(0,0,0,.05);
+  transition:transform .3s cubic-bezier(.22,1,.36,1), width .3s cubic-bezier(.22,1,.36,1);
 }
 .tab{
-  flex:1;border:0;background:transparent;border-radius:16px;
+  position:relative;z-index:1;
+  flex:1;border:0;background:transparent;border-radius:18px;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
   padding:7px 4px;cursor:pointer;
   font-size:10.5px;font-weight:600;color:var(--muted);
   -webkit-tap-highlight-color:transparent;
-  transition:color .2s,background .2s;
+  transition:color .2s;
 }
 .tab-icon{
   width:24px;height:24px;
@@ -373,8 +409,8 @@ main{display:block}
 .tab-icon.icon-highlight{background-image:var(--icon-highlight)}
 .tab.is-active .tab-icon{opacity:1;transform:scale(1.06)}
 .tab span{line-height:1.25}
-.tab.is-active{color:var(--gold-dark);background:rgba(0,0,0,.055)}
-.tab:active{background:rgba(0,0,0,.09)}
+.tab.is-active{color:var(--gold-dark)}
+.tab:active{color:var(--text)}
 
 /* ---------- 提示 ---------- */
 .toast{
@@ -439,11 +475,26 @@ html[data-theme="dark"] .goal-track{background:#2c2c2e}
 html[data-theme="dark"] .status::before,
 html[data-theme="dark"] .goal-eta.idle::before{background:#48484a}
 html[data-theme="dark"] .tabbar{
-  background:rgba(28,28,30,.78);
-  box-shadow:0 0 0 .5px rgba(255,255,255,.10), 0 10px 30px rgba(0,0,0,.55), 0 1px 2px rgba(0,0,0,.4);
+  border-color:rgba(255,255,255,.20);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.12) 0%, rgba(255,255,255,.02) 45%, rgba(255,255,255,.08) 100%),
+    rgba(28,28,30,.34);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.26),
+    inset 0 -1px 0 rgba(255,255,255,.08),
+    inset 0 0 22px rgba(255,255,255,.05),
+    0 0 0 .5px rgba(255,255,255,.12),
+    0 20px 48px rgba(0,0,0,.62);
 }
-html[data-theme="dark"] .tab.is-active{background:rgba(255,255,255,.10)}
-html[data-theme="dark"] .tab:active{background:rgba(255,255,255,.16)}
+html[data-theme="dark"] .tabbar::before{
+  background:linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 78%);
+}
+html[data-theme="dark"] .tabbar::after{opacity:.22}
+html[data-theme="dark"] .tab-indicator{
+  background:linear-gradient(180deg, rgba(255,255,255,.20), rgba(255,255,255,.08));
+  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.10), inset 0 1px 0 rgba(255,255,255,.14);
+}
+html[data-theme="dark"] .tab:active{color:var(--text)}
 html[data-theme="dark"] .toast{background:rgba(58,58,60,.92);box-shadow:0 0 0 .5px rgba(255,255,255,.12)}
 </style>
 </head>
@@ -478,6 +529,10 @@ html[data-theme="dark"] .toast{background:rgba(58,58,60,.92);box-shadow:0 0 0 .5
             <span class="unit">金币</span>
           </div>
           <span class="hero-icon icon-coin" role="img" aria-label="金币"></span>
+        </div>
+        <div class="hero-saved">
+          <span class="hero-saved-label">上月所存金币</span>
+          <span class="hero-saved-num" id="lastMonthCoins">0</span>
         </div>
         <div class="dateline">
           <div>
@@ -744,6 +799,7 @@ html[data-theme="dark"] .toast{background:rgba(58,58,60,.92);box-shadow:0 0 0 .5
   </main>
 
   <nav class="tabbar" aria-label="页面切换">
+    <span class="tab-indicator" id="tabIndicator" aria-hidden="true"></span>
     <button class="tab is-active" data-tab="coins" aria-label="金币页面">
       <span class="tab-icon icon-coin" aria-hidden="true"></span>
       <span>金币</span>
@@ -790,6 +846,7 @@ html[data-theme="dark"] .toast{background:rgba(58,58,60,.92);box-shadow:0 0 0 .5
       manualLadderSeason: '',
       coachLadderSeason: '',
       targetDate: '',
+      monthRecords: {},
       theme: 'auto'
     };
   }
@@ -848,6 +905,7 @@ html[data-theme="dark"] .toast{background:rgba(58,58,60,.92);box-shadow:0 0 0 .5
   if (!state.coachLadderSeason) state.coachLadderSeason = state.coachLadder > 0 ? loadSeason : '';
   state.cardPerm = !!state.cardPerm;
   state.cardMonth = !!state.cardMonth;
+  if (!state.monthRecords || typeof state.monthRecords !== 'object') state.monthRecords = {};
   if (['auto','light','dark'].indexOf(state.theme) < 0) state.theme = 'auto';
 
   var themeMedia = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
@@ -897,6 +955,7 @@ html[data-theme="dark"] .toast{background:rgba(58,58,60,.92);box-shadow:0 0 0 .5
   }
 
   function save(){
+    recordMonthBalance();
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
   }
 
@@ -1003,6 +1062,35 @@ html[data-theme="dark"] .toast{background:rgba(58,58,60,.92);box-shadow:0 0 0 .5
     return (Number(state.baseCoins) || 0) + flowsPast();
   }
 
+  // 某个月份的流水净额
+  function monthFlowSum(mKey){
+    return (state.flows || []).reduce(function(sum, f){
+      if (!f || !f.d || String(f.d).slice(0, 7) !== mKey) return sum;
+      return sum + (Number(f.a) || 0);
+    }, 0);
+  }
+
+  // 每月保存一次余额快照，上月所存金币即上月最后一次记录
+  function recordMonthBalance(){
+    if (!state.monthRecords || typeof state.monthRecords !== 'object') state.monthRecords = {};
+    var now = new Date();
+    var curKey = monthKey(now);
+    state.monthRecords[curKey] = currentCoins();
+    var keepFrom = monthKey(new Date(now.getFullYear(), now.getMonth() - 2, 1));
+    Object.keys(state.monthRecords).forEach(function(k){
+      if (k < keepFrom) delete state.monthRecords[k];
+    });
+  }
+
+  // 上月所存金币：优先取上月快照，没有快照则用当前余额减去本月净变动推算
+  function lastMonthSaved(){
+    var now = new Date();
+    var prevKey = monthKey(new Date(now.getFullYear(), now.getMonth() - 1, 1));
+    var snap = state.monthRecords[prevKey];
+    if (typeof snap === 'number') return Math.max(0, snap);
+    return Math.max(0, currentCoins() - monthFlowSum(monthKey(now)));
+  }
+
   function addFlow(type, amount, meta){
     if (!amount) return;
     var f = { d: dateKey(new Date()), t: type, a: amount };
@@ -1046,6 +1134,8 @@ html[data-theme="dark"] .toast{background:rgba(58,58,60,.92);box-shadow:0 0 0 .5
     var totalEl = $('#coinTotal');
     if (!totalEl) return;
     totalEl.textContent = fmt(currentCoins());
+    var savedEl = $('#lastMonthCoins');
+    if (savedEl) savedEl.textContent = fmt(lastMonthSaved());
     if (animate) bump($('#coinHero'));
 
     $all('[data-card]').forEach(function(btn){
@@ -1256,16 +1346,231 @@ html[data-theme="dark"] .toast{background:rgba(58,58,60,.92);box-shadow:0 0 0 .5
     return Math.floor(n);
   }
 
+  /* ---------- 标签页切换（点击 / 在导航栏上滑动选择） ---------- */
+  var tabs = [], pages = [], activeIndex = 0, mainEl = null, tabbarEl = null, indicator = null;
+  var switching = false, switchTimer = null;
+  var tabDrag = null, tabClickBlockUntil = 0;
+  var SLIDE = '.32s cubic-bezier(.22,1,.36,1)';
+
+  function buildTabRefs(){
+    mainEl = $('main');
+    tabbarEl = $('.tabbar');
+    indicator = $('#tabIndicator');
+    tabs = $all('.tab');
+    pages = tabs.map(function(tab){
+      return $('.page[data-page="' + tab.getAttribute('data-tab') + '"]');
+    });
+    activeIndex = 0;
+    for (var i = 0; i < tabs.length; i++) {
+      if (tabs[i].classList.contains('is-active')) { activeIndex = i; break; }
+    }
+  }
+
+  function placeIndicator(animate){
+    if (!indicator || !tabs[activeIndex]) return;
+    var tab = tabs[activeIndex];
+    indicator.style.transition = animate === false ? 'none' : '';
+    indicator.style.width = tab.offsetWidth + 'px';
+    indicator.style.transform = 'translateX(' + tab.offsetLeft + 'px)';
+  }
+
+  function setTabClasses(index, moveIndicator){
+    activeIndex = index;
+    for (var i = 0; i < tabs.length; i++) tabs[i].classList.toggle('is-active', i === index);
+    if (moveIndicator !== false) placeIndicator(true);
+  }
+
+  function setPageClasses(index){
+    for (var i = 0; i < pages.length; i++) pages[i].classList.toggle('is-active', i === index);
+  }
+
+  function resetPageStyles(){
+    for (var i = 0; i < pages.length; i++) {
+      var p = pages[i];
+      p.style.display = '';
+      p.style.position = '';
+      p.style.top = '';
+      p.style.left = '';
+      p.style.width = '';
+      p.style.transform = '';
+      p.style.transition = '';
+    }
+  }
+
+  // 点击切换：把即将进入的页面摆在屏幕外侧，做一次滑动过渡
+  function prepareNeighbor(fromEl, toEl, dir, W){
+    toEl.classList.add('no-page-anim');
+    toEl.style.display = 'block';
+    toEl.style.position = 'absolute';
+    toEl.style.top = '0';
+    toEl.style.left = '0';
+    toEl.style.width = '100%';
+    toEl.style.transition = 'none';
+    toEl.style.transform = 'translateX(' + (dir * W) + 'px)';
+    fromEl.style.transition = 'none';
+    fromEl.style.transform = 'translateX(0)';
+  }
+
+  function commitSlide(fromEl, toEl, newIndex, dir){
+    switching = true;
+    var W = mainEl.clientWidth;
+    fromEl.style.transition = SLIDE;
+    toEl.style.transition = SLIDE;
+    fromEl.style.transform = 'translateX(' + (-dir * W) + 'px)';
+    toEl.style.transform = 'translateX(0)';
+    setTabClasses(newIndex);
+    window.scrollTo(0, 0);
+    clearTimeout(switchTimer);
+    switchTimer = setTimeout(function(){
+      resetPageStyles();
+      setPageClasses(newIndex);
+      switching = false;
+    }, 330);
+  }
+
+  function switchTo(index){
+    if (index < 0 || index >= tabs.length || index === activeIndex || switching) return;
+    var fromEl = pages[activeIndex], toEl = pages[index];
+    var dir = index > activeIndex ? 1 : -1;
+    var W = mainEl.clientWidth;
+    prepareNeighbor(fromEl, toEl, dir, W);
+    void toEl.offsetWidth;
+    commitSlide(fromEl, toEl, index, dir);
+  }
+
+  /* ---------- 导航栏滑动选择 ---------- */
+  function tabCenters(){
+    var arr = [];
+    for (var i = 0; i < tabs.length; i++) arr.push(tabs[i].offsetLeft + tabs[i].offsetWidth / 2);
+    return arr;
+  }
+
+  // 手指位置换算成连续标签进度：0=第一个，1=第二个，1.5=中间过渡
+  function tabProgress(clientX){
+    var x = clientX - tabbarEl.getBoundingClientRect().left;
+    var c = tabCenters();
+    if (x <= c[0]) return 0;
+    if (x >= c[c.length - 1]) return c.length - 1;
+    for (var i = 0; i < c.length - 1; i++) {
+      if (x <= c[i + 1]) return i + (x - c[i]) / (c[i + 1] - c[i]);
+    }
+    return c.length - 1;
+  }
+
+  // 拖动开始时把三页铺成一条横向轨道，高度锁定为当前页
+  function startPagesDrag(){
+    mainEl.style.height = mainEl.offsetHeight + 'px';
+    mainEl.style.overflow = 'hidden';
+    for (var i = 0; i < pages.length; i++) {
+      var p = pages[i];
+      p.classList.add('no-page-anim');
+      p.style.display = 'block';
+      p.style.position = 'absolute';
+      p.style.top = '0';
+      p.style.left = '0';
+      p.style.width = '100%';
+      p.style.transition = 'none';
+    }
+  }
+
+  function movePages(f){
+    var W = mainEl.clientWidth;
+    for (var i = 0; i < pages.length; i++) {
+      pages[i].style.transform = 'translateX(' + ((i - f) * W) + 'px)';
+    }
+  }
+
+  function settleTabDrag(target){
+    var W = mainEl.clientWidth;
+    for (var i = 0; i < pages.length; i++) {
+      pages[i].style.transition = SLIDE;
+      pages[i].style.transform = 'translateX(' + ((i - target) * W) + 'px)';
+    }
+    setTabClasses(target);
+    window.scrollTo(0, 0);
+    clearTimeout(switchTimer);
+    switchTimer = setTimeout(function(){
+      mainEl.style.height = '';
+      mainEl.style.overflow = '';
+      resetPageStyles();
+      setPageClasses(target);
+    }, 340);
+  }
+
+  function onTabbarTouchStart(e){
+    if (switching || tabDrag || e.touches.length !== 1) return;
+    var t = e.touches[0];
+    tabDrag = { x0: t.clientX, y0: t.clientY, active: false, f: activeIndex };
+  }
+
+  function onTabbarTouchMove(e){
+    if (!tabDrag || e.touches.length !== 1) return;
+    var t = e.touches[0];
+    var dx = t.clientX - tabDrag.x0;
+    var dy = t.clientY - tabDrag.y0;
+    if (!tabDrag.active) {
+      if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+      if (Math.abs(dy) > Math.abs(dx)) { tabDrag = null; return; }
+      tabDrag.active = true;
+      indicator.style.transition = 'none';
+      startPagesDrag();
+    }
+    if (e.cancelable) e.preventDefault();
+    var f = tabProgress(t.clientX);
+    tabDrag.f = f;
+    movePages(f);
+
+    // 指示块跟随手指
+    var w = tabs[0].offsetWidth;
+    var x = t.clientX - tabbarEl.getBoundingClientRect().left;
+    var minX = tabs[0].offsetLeft;
+    var maxX = tabs[tabs.length - 1].offsetLeft;
+    indicator.style.width = w + 'px';
+    indicator.style.transform = 'translateX(' + Math.max(minX, Math.min(maxX, x - w / 2)) + 'px)';
+
+    var hit = Math.round(f);
+    if (hit !== activeIndex) setTabClasses(hit, false);
+  }
+
+  function onTabbarTouchEnd(){
+    if (!tabDrag) return;
+    var moved = tabDrag.active;
+    var target = Math.round(tabDrag.f);
+    tabDrag = null;
+    if (!moved) return;
+    tabClickBlockUntil = Date.now() + 350;
+    settleTabDrag(target);
+  }
+
+  function bindTabSwipe(){
+    tabbarEl.addEventListener('touchstart', onTabbarTouchStart, { passive: true });
+    tabbarEl.addEventListener('touchmove', onTabbarTouchMove, { passive: false });
+    tabbarEl.addEventListener('touchend', onTabbarTouchEnd, { passive: true });
+    tabbarEl.addEventListener('touchcancel', function(){
+      if (tabDrag && tabDrag.active) {
+        tabClickBlockUntil = Date.now() + 350;
+        settleTabDrag(activeIndex);
+      }
+      tabDrag = null;
+    }, { passive: true });
+    // 滑动选择后拦截紧随其后的点击
+    tabbarEl.addEventListener('click', function(e){
+      if (Date.now() < tabClickBlockUntil) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+    }, true);
+    window.addEventListener('resize', function(){ placeIndicator(false); });
+  }
+
   /* ---------- 事件绑定 ---------- */
   function bind(){
-    $all('.tab').forEach(function(tab){
-      tab.addEventListener('click', function(){
-        var page = tab.getAttribute('data-tab');
-        $all('.tab').forEach(function(t){ t.classList.toggle('is-active', t === tab); });
-        $all('.page').forEach(function(p){ p.classList.toggle('is-active', p.getAttribute('data-page') === page); });
-        window.scrollTo(0, 0);
-      });
+    buildTabRefs();
+    tabs.forEach(function(tab, i){
+      tab.addEventListener('click', function(){ switchTo(i); });
     });
+    placeIndicator(false);
+    bindTabSwipe();
 
     $all('[data-card]').forEach(function(btn){
       btn.addEventListener('click', function(){
@@ -1583,6 +1888,9 @@ html[data-theme="dark"] .toast{background:rgba(58,58,60,.92);box-shadow:0 0 0 .5
     targetInput.value = state.targetDate;
     targetInput.min = dateKey(now);
 
+    recordMonthBalance();
+    save();
+
     updateClock();
     setInterval(updateClock, 1000);
 
@@ -1590,6 +1898,7 @@ html[data-theme="dark"] .toast{background:rgba(58,58,60,.92);box-shadow:0 0 0 .5
     bindTheme();
     applyTheme();
     renderAll();
+    requestAnimationFrame(function(){ placeIndicator(false); });
   }
 
   init();
